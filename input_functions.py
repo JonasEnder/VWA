@@ -33,7 +33,7 @@ def foo():
     return ring_positions
 
 
-def foo():
+def bar():
     while True:
         split_input = input("Wheel positions: ").strip().lower().split(" ")
         if all(item in alphabet for item in split_input):
