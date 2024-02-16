@@ -1,3 +1,7 @@
+import os
+
+from input_functions import *
+
 alphabet = list("abcdefghijklmnopqrstuvwxyz")
 
 wheel_outputs = [list("ekmflgdqvzntowyhxuspaibrcj"), list("ajdksiruxblhwtmcqgznpyfvoe"),
@@ -7,11 +11,18 @@ wheel_outputs = [list("ekmflgdqvzntowyhxuspaibrcj"), list("ajdksiruxblhwtmcqgznp
 wheel_notches = ["q", "e", "v", "j", "z"]
 
 
+def clear_command_line():
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
+
+
 class EnigmaBaseObject:
 
     def __init__(self, name=""):
         self.name = name
-        self.arrows = ["\t"] * 26
+        self.arrows = ["     "] * 26
         self.shifted_alphabet = alphabet.copy()
         self.forward_mapping = {letter: letter for letter in alphabet}
         self.backward_mapping = {letter: letter for letter in alphabet}
@@ -21,7 +32,7 @@ class EnigmaBaseObject:
         input_letter = shifted_alphabet_copy[input_index]
         output_letter = self.forward_mapping[input_letter]
         output_index = shifted_alphabet_copy.index(output_letter)
-        self.arrows[input_index] = ">>>"
+        self.arrows[input_index] = " >>> "
         return output_index
 
     def map_backwards(self, input_index):
@@ -29,11 +40,11 @@ class EnigmaBaseObject:
         input_letter = shifted_alphabet_copy[input_index]
         output_letter = self.backward_mapping[input_letter]
         output_index = shifted_alphabet_copy.index(output_letter)
-        self.arrows[output_index] = "<<<"
+        self.arrows[output_index] = " <<< "
         return output_index
 
     def clear_arrows(self):
-        self.arrows = ["\t"] * 26
+        self.arrows = ["     "] * 26
 
 
 class Plugboard(EnigmaBaseObject):
@@ -82,6 +93,14 @@ class Wheel(EnigmaBaseObject):
     def replace_notch(self, notch_positon):
         self.shifted_alphabet[self.shifted_alphabet.index(notch_positon)] = notch_positon.upper()
 
+    def reset_wheel_position(self, wheel_position):
+        self.wheel_position = wheel_position
+        self.shifted_alphabet = alphabet.copy()
+        self.shift_alphabet(self.wheel_position)
+        self.apply_ring_position()
+        self.replace_notch(self.notch_position)
+
+
 class Reflector(EnigmaBaseObject):
 
     def __init__(self, name="R"):
@@ -94,8 +113,8 @@ class Reflector(EnigmaBaseObject):
         input_letter = self.shifted_alphabet[input_index]
         output_letter = self.forward_mapping[input_letter]
         output_index = self.shifted_alphabet.index(output_letter)
-        self.arrows[self.shifted_alphabet.index(input_letter)] = ">>>"
-        self.arrows[self.shifted_alphabet.index(output_letter)] = "<<<"
+        self.arrows[self.shifted_alphabet.index(input_letter)] = " >>> "
+        self.arrows[self.shifted_alphabet.index(output_letter)] = " <<< "
         return output_index
 
 
@@ -122,6 +141,14 @@ class Enigma:
         self.reflector = Reflector()
         self.enigma_base_objects.append(self.reflector)
 
+    def reset_wheel_positions(self, wheel_positions):
+        self.text = ""
+        self.coded_text = ""
+        wheel_positions.reverse()
+        for i, wheel in enumerate(self.wheels):
+            wheel.reset_wheel_position(wheel_positions[i])
+        self.update_wheel_positions()
+
     def update_wheel_positions(self):
         self.previous_wheel_positions = self.wheel_positions
         self.wheel_positions = []
@@ -144,12 +171,21 @@ class Enigma:
             self.wheels[1].increase_wheel_position()
             self.wheels[2].increase_wheel_position()
 
+    def turn_wheels_no_anomaly(self):
+        self.turn += 1
+        if self.turn % 1 == 0:
+            self.wheels[0].increase_wheel_position()
+        if self.turn % 26 == 0:
+            self.wheels[1].increase_wheel_position()
+        if self.turn % 676 == 0:
+            self.wheels[2].increase_wheel_position()
+
     def show_table(self):
-        output = "\n\t"
+        output = "\n      "
         for enigma_base_object in self.enigma_base_objects:
-            output += f"{enigma_base_object.name}\t"
+            output += f"{enigma_base_object.name}     "
         print(output)
-        print("-"*25)
+        print("-" * 37)
         for i in range(26):
             output = f"{alphabet[i].upper()}"
             for enigma_base_object in self.enigma_base_objects:
@@ -172,20 +208,32 @@ class Enigma:
         output_letter = self.scramble_letter(input_letter)
         return output_letter
 
+    def code_letter_no_anomaly(self, input_letter):
+        self.turn_wheels_no_anomaly()
+        self.clear_arrows()
+        self.update_wheel_positions()
+        output_letter = self.scramble_letter(input_letter)
+        return output_letter
+
     def run(self):
         self.update_wheel_positions()
         while True:
-            print(f"\n{'{}-{}-{}'.format(*[number + 1 for number in self.wheel_positions])}/{'{}-{}-{}'.format(*[alphabet[number].upper() for number in self.wheel_positions])}")
+            print(
+                f"{'{}-{}-{}'.format(*[number + 1 for number in self.wheel_positions])}/{'{}-{}-{}'.format(*[alphabet[number].upper() for number in self.wheel_positions])}")
             print(f"Text: {self.text.upper()}")
             print(f"Coded text: {self.coded_text.upper()}")
-            stripped_input = input("Input: ").lower().replace(" ", "")
+            self.show_table()
+            print("\nP...Plugboard")
+            print("E...Entry-wheel")
+            print("1,2,3...Wheels")
+            print("R...Reflector")
+            stripped_input = input("\nInput: ").lower().replace(" ", "")
             try:
                 if stripped_input == ".exit":
                     break
-                elif stripped_input == ".help":
-                    ...
-                elif stripped_input == ".show":
-                    self.show_table()
+                elif stripped_input == ".reset":
+                    wheel_positions = input_wheel_positions()
+                    self.reset_wheel_positions(wheel_positions)
                 else:
                     for letter in stripped_input:
                         _ = alphabet.index(letter)
@@ -194,3 +242,4 @@ class Enigma:
                     self.text += stripped_input
             except ValueError:
                 print("Invalid input")
+            clear_command_line()

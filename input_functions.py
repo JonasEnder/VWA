@@ -19,34 +19,6 @@ def input_wheel_order():
             print("Invalid input")
 
 
-def foo():
-    while True:
-        split_input = input("Ring positions: ").strip().lower().split(" ")
-        if all(item in alphabet for item in split_input):
-            ring_positions = [alphabet.index(item) for item in split_input]
-            break
-        elif all(item.isnumeric() for item in split_input):
-            if all(item in range(1, 27) for item in split_input):
-                ring_positions = [int(item) - 1 for item in split_input]
-                break
-        print("Invalid input")
-    return ring_positions
-
-
-def bar():
-    while True:
-        split_input = input("Wheel positions: ").strip().lower().split(" ")
-        if all(item in alphabet for item in split_input):
-            wheel_positions = [alphabet.index(item) for item in split_input]
-            break
-        elif all(item.isnumeric() for item in split_input):
-            if all(item in range(1, 27) for item in split_input):
-                wheel_positions = [int(item) - 1 for item in split_input]
-                break
-        print("Invalid input")
-    return wheel_positions
-
-
 def input_ring_positions():
     while True:
         split_input = input("Ring positions: ").strip().lower().split(" ")
@@ -69,6 +41,7 @@ def input_ring_positions():
             except ValueError:
                 print("Invalid input")
     return ring_positions
+
 
 def input_wheel_positions():
     while True:
@@ -113,6 +86,7 @@ def input_plugboard_pairs():
                 print("Invalid input")
         else:
             return None
+
 
 def input_reference_letter():
     while True:

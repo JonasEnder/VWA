@@ -7,7 +7,8 @@ def calculate_value(string: str):
     for i in range(3):
         index = alphabet.index(string[i])
         output += index * (26 ** (2 - i))
-    print(f"{original_string} >>> {output}")
+    #print(f"{original_string} >>> {output}")
+    return output
 
 
 def calculate_shift(number: int):
@@ -18,4 +19,5 @@ def calculate_shift(number: int):
         digit = number // power
         output += alphabet[digit]
         number = number % power
-    print(f"{original_number} >>> {output}")
+    #print(f"{original_number} >>> {output}")
+    return output

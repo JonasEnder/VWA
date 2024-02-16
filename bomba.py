@@ -2,6 +2,8 @@ from enigma import Enigma
 
 from input_functions import *
 
+from calculator import *
+
 alphabet = list("abcdefghijklmnopqrstuvwxyz")
 
 
@@ -33,7 +35,7 @@ class Bomba:
         for count, output in enumerate(self.pseudo_enigmas_outputs):
             reference_letter = self.reference_letters[count].upper()
             output = output.upper()
-            wheel_positions_numbers = [n+1 for n in self.pseudo_enigmas[count].previous_wheel_positions]
+            wheel_positions_numbers = [n + 1 for n in self.pseudo_enigmas[count].previous_wheel_positions]
             wheel_positions_letters = [alphabet[n].upper() for n in self.pseudo_enigmas[count].previous_wheel_positions]
             print(
                 f"{reference_letter} >>> {output} at {'{}-{}-{}'.format(*wheel_positions_numbers)}/{'{}-{}-{}'.format(*wheel_positions_letters)}")
@@ -41,7 +43,7 @@ class Bomba:
     def break_code(self):
         for i in range(17575):
             for count, pseudo_enigma in enumerate(self.pseudo_enigmas):
-                pseudo_enigma_output = pseudo_enigma.code_letter(self.reference_letters[count])
+                pseudo_enigma_output = pseudo_enigma.code_letter_no_anomaly(self.reference_letters[count])
                 self.pseudo_enigmas_outputs.append(pseudo_enigma_output)
             if self.found_possible_answer():
                 print(f"\nPossible solution:")
